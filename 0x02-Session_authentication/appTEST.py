@@ -12,8 +12,6 @@ from api.v1.auth.auth import Auth
 from api.v1.views import app_views
 from api.v1.auth.basic_auth import BasicAuth
 from api.v1.auth.session_auth import SessionAuth
-from api.v1.auth.session_exp_auth import SessionExpAuth
-from api.v1.auth.session_db_auth import SessionDBAuth
 
 
 app = Flask(__name__)
@@ -27,10 +25,6 @@ if auth_type == 'basic_auth':
     auth = BasicAuth()
 if auth_type == 'session_auth':
     auth = SessionAuth()
-if auth_type == 'SessionExpAuth':
-    auth = session_exp_auth()
-if auth_type == 'SessionDBAuth':
-    auth = session_db_auth()
 
 
 @app.errorhandler(404)
@@ -65,28 +59,34 @@ def authenticate_user():
         '/api/v1/status/',
         '/api/v1/unauthorized/',
         '/api/v1/forbidden/',
-        '/api/v1/auth_session/login/',
     ]
 
     # Check if the current request path requires authentication
     if not auth.require_auth(request.path, excluded_paths):
         return  # If authentication is not required, proceed with the request.
 
-    # Use the correct method based on the auth class
-    if isinstance(auth, SessionAuth):
-        auth_session = auth.session_cookie(request)
-        user = auth.current_user(request) if auth_session else None
-        request.current_user = user
-    else:
-        user = auth.current_user(request)
-        request.current_user = user
+    # Get the Authorization header and current user
+    auth_header = auth.authorization_header(request)
+    user = auth.current_user(request)
+
+    # Get the Sessions cookies and current user
+    auth_session = auth.session_cookie(request)
+    session_user = session.current_user(request)
+
+    # Assign the authenticated user to request.current_user
+    request.current_user = user if user else session_user
 
     # Abort with 401 if the Authorization header is missing
-    if not request.current_user:
+    if auth_header is None and auth_session is None:
         abort(401)
+
+    # Abort with 403 if the user is not authenticated
+    if request.current_user is None:
+        abort(403)
 
 
 if __name__ == "__main__":
     host = getenv("API_HOST", "0.0.0.0")
     port = getenv("API_PORT", "5000")
     app.run(host=host, port=port)
+    app.run(debug=True)
