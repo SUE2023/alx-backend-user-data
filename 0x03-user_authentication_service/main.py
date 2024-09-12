@@ -6,20 +6,37 @@ import requests
 EMAIL = "guillaume@holberton.io"
 PASSWD = "b4l0u"
 NEW_PASSWD = "t4rt1fl3tt3"
+BASE_URL = "http://0.0.0.0:5000"
 
 
 def register_user(email: str, password: str) -> None
     """ Tests the registration endpoint"""
-    pass
+    url = "{}/users".format(BASE_URL)
+    body = {
+        'email': email,
+        'password': password,
+    }
+    res = requests.post(url, data=body)
+    assert res.status_code == 200
+    assert res.json() == {"email": email, "message": "user created"}
+    res = requests.post(url, data=body)
+    assert res.status_code == 400
+    assert res.json() == {"message": "email already registered"}
 
 
 def log_in_wrong_password(email: str, password: str) -> None
-    """ """
-    pass
+    """Tests logging in with a wrong password."""
+    url = "{}/sessions".format(BASE_URL)
+    body = {
+        'email': email,
+        'password': password,
+    }
+    res = requests.post(url, data=body)
+    assert res.status_code == 401
 
 
 def log_in(email: str, password: str) -> str
-    """" """
+    """" Tests Login endpoint"""
     pass
 
 
