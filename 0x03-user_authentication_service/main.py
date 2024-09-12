@@ -9,7 +9,7 @@ NEW_PASSWD = "t4rt1fl3tt3"
 BASE_URL = "http://0.0.0.0:5000"
 
 
-def register_user(email: str, password: str) -> None
+def register_user(email: str, password: str) -> None:
     """ Tests the registration endpoint"""
     url = "{}/users".format(BASE_URL)
     body = {
@@ -24,7 +24,7 @@ def register_user(email: str, password: str) -> None
     assert res.json() == {"message": "email already registered"}
 
 
-def log_in_wrong_password(email: str, password: str) -> None
+def log_in_wrong_password(email: str, password: str) -> None:
     """Tests logging in with a wrong password."""
     url = "{}/sessions".format(BASE_URL)
     body = {
@@ -35,33 +35,33 @@ def log_in_wrong_password(email: str, password: str) -> None
     assert res.status_code == 401
 
 
-def log_in(email: str, password: str) -> str
-    """" Tests Login endpoint"""
+def log_in(email: str, password: str) -> str:
+    """ Tests Login endpoint"""
     pass
 
 
-def profile_unlogged() -> None
+def profile_unlogged() -> None:
     """ """
     pass
 
 
-def profile_logged(session_id: str) -> None
+def profile_logged(session_id: str) -> None:
     """ """
     pass
 
 
-def log_out(session_id: str) -> None
+def log_out(session_id: str) -> None:
     """ """
     pass
 
 
-def reset_password_token(email: str) -> str
+def reset_password_token(email: str) -> str:
     """ """
     pass
 
 
-def update_password(email: str, reset_token: str, new_password: str) -> None
-    """" Tests the update function"""
+def update_password(email: str, reset_token: str, new_password: str) -> None:
+    """ Tests the update method"""
     pass
 
 
