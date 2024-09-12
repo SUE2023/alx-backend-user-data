@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """ App Module"""
 
-from flask import Flask, jsonify, request, abort
+from flask import Flask, jsonify, request, abort, redirect
 from auth import Auth
 
 app = Flask(__name__)
@@ -68,6 +68,55 @@ def logout() -> str:
         abort(403)
     AUTH.destroy_session(user.id)
     return redirect("/")
+
+
+@app.route("/profile", methods=["GET"], strict_slashes=False)
+def profile() -> str:
+    """Get the user's profile."""
+    # Get the session ID from the cookies
+    session_id = request.cookies.get("session_id")
+    # Retrieve the user from the session ID
+    user = AUTH.get_user_from_session_id(session_id)
+    # Check if the user exists
+    if user is not None:
+        return jsonify({"email": user.email}), 200
+    else:
+        # Respond with a 403 status code if the user does not exist
+        # or session ID is invalid
+        abort(403)
+
+
+@app.route("/reset_password", methods=["POST"], strict_slashes=False)
+def get_reset_password_token() -> str:
+    """Resets password and provides a reset token."""
+    # Get the email from the form data
+    email = request.form.get("email")
+
+    # Check if the email is registered
+    try:
+        reset_token = AUTH.get_reset_password_token(email)
+        return jsonify({"email": email, "reset_token": reset_token}), 200
+    except ValueError:
+        # Respond with a 403 status code if the email is not registered
+        abort(403)
+
+
+@app.route("/reset_password", methods=["PUT"], strict_slashes=False)
+def update_password() -> str:
+    """Updates the user's password given a reset token."""
+    # Get the form data from the request
+    email = request.form.get("email")
+    reset_token = request.form.get("reset_token")
+    new_password = request.form.get("new_password")
+
+    try:
+        # Attempt to update the password using the reset token
+        AUTH.update_password(reset_token, new_password)
+        # Return a success response if the update is successful
+        return jsonify({"email": email, "message": "Password updated"}), 200
+    except ValueError:
+        # If the reset token is invalid, respond with a 403 error code
+        abort(403)
 
 
 if __name__ == "__main__":
